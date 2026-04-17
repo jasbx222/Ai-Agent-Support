@@ -3,31 +3,36 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Ticket;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $users = [];
 
-        $user = User::factory()->create([
-            'name' => 'Agent Nexus',
-            'email' => 'nexus@example.com',
-        ]);
+        // إنشاء 10 مستخدمين
+        for ($i = 1; $i <= 10; $i++) {
+            $user = User::create([
+                'name' => "User $i",
+                'email' => "user$i@example.com",
+                'password' => Hash::make('12345678'),
+            ]);
 
-        \App\Models\Ticket::create([
-            'user_id' => $user->id,
-            'subject' => 'نظام تجريبي',
-            'description' => 'تذكرة تجريبية لاختبار نظام الذكاء الاصطناعي',
-            'status' => 'Open',
-            'priority' => 'Medium',
-        ]);
+            $users[] = $user;
+        }
+
+        // إنشاء 10 تذاكر (واحدة لكل مستخدم)
+        for ($i = 0; $i < 10; $i++) {
+            Ticket::create([
+                'user_id' => $users[$i]->id,
+                'subject' => "تذكرة رقم " . ($i + 1),
+                'description' => "هذا وصف التذكرة رقم " . ($i + 1),
+                'status' => ['Open', 'Closed', 'Pending'][rand(0, 2)],
+                'priority' => ['Low', 'Medium', 'High'][rand(0, 2)],
+            ]);
+        }
     }
 }
