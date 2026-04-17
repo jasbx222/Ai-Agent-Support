@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Ai\Agents\TicketTrigger;
+use App\Ai\Agents\TicketAssistant;
 use App\Models\AiRun;
+use App\Models\Ticket;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Laravel\Ai\Exceptions\RateLimitedException;
 use Throwable;
 
@@ -14,27 +17,37 @@ class TicketTriggerController extends Controller
     {
         $validated = $request->validate([
             'message' => ['required', 'string'],
-            'ticket_id' => ['nullable', 'integer'],
+            'ticket_id' => ['nullable', 'integer', 'exists:tickets,id'],
         ]);
+
         $run = null;
 
         try {
-            $user = \App\Models\User::first();
-            
-            if (!$user) {
+            $user = User::first();
+
+            if (! $user) {
                 return response()->json([
                     'success' => false,
                     'message' => 'No users found in the database. Please seed the database.',
                 ], 400);
             }
 
-            $ticket = \App\Models\Ticket::first() ?? \App\Models\Ticket::create([
-                'user_id' => $user->id,
-                'subject' => 'AI Generated Ticket',
-                'description' => $validated['message'],
-                'status' => 'Open',
-                'priority' => 'Medium',
-            ]);
+            if (! empty($validated['ticket_id'])) {
+                $ticket = Ticket::findOrFail($validated['ticket_id']);
+            } else {
+                $ticket = Ticket::create([
+                    'user_id' => $user->id,
+                    'subject' => 'AI Generated Ticket',
+                    'description' => $validated['message'],
+                    'status' => 'Open',
+                    'priority' => 'Medium',
+                ]);
+            }
+
+            if (! $ticket->ai_conversation_id) {
+                $ticket->ai_conversation_id = (string) Str::uuid();
+                $ticket->save();
+            }
 
             $run = AiRun::create([
                 'user_id' => $user->id,
@@ -43,16 +56,19 @@ class TicketTriggerController extends Controller
                 'provider' => 'openai',
                 'model' => 'gpt-4o-mini',
                 'status' => 'pending',
-                'feature_key' => 'ticket_trigger',
+                'feature_key' => 'ticket_assistant',
                 'input_hash' => md5($validated['message']),
                 'started_at' => now(),
             ]);
 
-            $response = TicketTrigger::make()->prompt($validated['message']);
+            $response = TicketAssistant::make()
+                ->continue($ticket->ai_conversation_id, as: $user)
+                ->prompt($validated['message']);
 
             $run->update([
                 'status' => 'success',
-             
+                'completed_at' => now(),
+                'response' => $response,
             ]);
 
             $usage = data_get($response, 'usage');
@@ -68,6 +84,8 @@ class TicketTriggerController extends Controller
 
             return response()->json([
                 'success' => true,
+                'conversation_id' => $ticket->ai_conversation_id,
+                'ticket_id' => $ticket->id,
                 'data' => $response,
             ]);
         } catch (RateLimitedException $e) {
@@ -75,6 +93,7 @@ class TicketTriggerController extends Controller
                 $run->update([
                     'status' => 'rate_limited',
                     'error_message' => $e->getMessage(),
+                    'completed_at' => now(),
                 ]);
             }
 
@@ -87,6 +106,7 @@ class TicketTriggerController extends Controller
                 $run->update([
                     'status' => 'failed',
                     'error_message' => $e->getMessage(),
+                    'completed_at' => now(),
                 ]);
             }
 

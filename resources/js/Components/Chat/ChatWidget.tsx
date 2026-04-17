@@ -6,7 +6,7 @@ import { glassStyle } from '../../Theme/NexusTheme';
 import axios from 'axios';
 import { RichCard } from './RichCard';
 
-export function ChatWidget() {
+export function ChatWidget({ type }: { type: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<any[]>([
@@ -16,14 +16,15 @@ export function ChatWidget() {
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
-    
+
     const userMsg = { id: Date.now(), text: input, sender: 'user' };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setIsLoading(true);
 
+
     try {
-      const response = await axios.post('/tickets/trigger', { message: input });
+      const response = await axios.post(`${type === 'admin' ? '/admin/tickets/trigger' : '/api/ticket/ai'}`, { message: input });
       const aiData = response.data.data;
 
       if (!aiData) {
@@ -33,19 +34,43 @@ export function ChatWidget() {
           sender: 'ai'
         }]);
       } else {
-        // First: the human-facing reply
-        setMessages(prev => [...prev, {
-          id: Date.now() + 1,
-          text: aiData.reply,
-          sender: 'ai'
-        }]);
-        // Then: the analysis card with classification details
-        setMessages(prev => [...prev, {
-          id: Date.now() + 2,
-          sender: 'ai',
-          isRichCard: true,
-          aiData: aiData
-        }]);
+        if (type === 'admin') {
+          // Admin sees technical analysis + reply
+          setMessages(prev => [...prev, {
+            id: Date.now() + 1,
+            text: aiData.reply || 'تم تحليل الرسالة بنجاح.',
+            sender: 'ai'
+          }]);
+          setMessages(prev => [...prev, {
+            id: Date.now() + 2,
+            sender: 'ai',
+            isRichCard: true,
+            aiData: aiData
+          }]);
+        } else {
+          // Customer only sees friendly text reply
+          let aiReply = 'شكراً لتواصلك معنا، سأقوم بمساعدتك.';
+          
+          if (typeof aiData === 'string') {
+            aiReply = aiData;
+          } else if (aiData.text) {
+             try {
+                // Try parsing if the text field contains stringified JSON
+                const parsed = JSON.parse(aiData.text);
+                aiReply = parsed.reply || aiData.text;
+             } catch (e) {
+                aiReply = aiData.text;
+             }
+          } else {
+            aiReply = aiData.content || aiData.reply || aiReply;
+          }
+
+          setMessages(prev => [...prev, {
+            id: Date.now() + 1,
+            text: aiReply,
+            sender: 'ai'
+          }]);
+        }
       }
     } catch (error) {
       console.error('Chat Error:', error);
@@ -140,7 +165,7 @@ export function ChatWidget() {
 
               {/* Input */}
               <Box sx={{ p: 3, borderTop: `1px solid ${alpha('#ffffff', 0.05)}` }}>
-                
+
                 <TextField
                   fullWidth
                   placeholder="اكتب سؤالك هنا..."

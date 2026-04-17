@@ -3,21 +3,23 @@ import { Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typogr
 import { LayoutDashboard, Ticket, Settings, Users, MessageSquare, BarChart3, HelpCircle } from 'lucide-react';
 import { Link, usePage } from '@inertiajs/react';
 
-const menuItems = [
-  { text: 'نظرة عامة', icon: LayoutDashboard, route: 'dashboard' },
-  { text: 'التذاكر النشطة', icon: Ticket, route: 'tickets' },
-  { text: 'المحادثات الذكية', icon: MessageSquare, route: 'chat' },
-  { text: 'التحليلات', icon: BarChart3, route: 'analytics' },
-  { text: 'فريق الدعم', icon: Users, route: 'team' },
-];
-
-const secondaryItems = [
-  { text: 'الإعدادات', icon: Settings, route: 'settings' },
-  { text: 'المساعدة', icon: HelpCircle, route: 'help' },
-];
-
 export function Sidebar() {
-  const { url } = usePage();
+  const { url, props } = usePage();
+  const user = (props.auth as any)?.user;
+  const isAdmin = user?.role === 'admin';
+
+  const menuItems = [
+    { text: 'نظرة عامة', icon: LayoutDashboard, route: 'dashboard' },
+    { text: 'التذاكر', icon: Ticket, route: 'tickets-dashboard' },
+    { text: 'العملاء والمحادثات', icon: Users, route: 'customers' },
+    // { text: 'المحادثات الذكية', icon: MessageSquare, route: 'chat' },
+    ...(isAdmin ? [{ text: 'فريق الدعم', icon: Users, route: 'team' }] : []),
+  ];
+
+  const secondaryItems = [
+    { text: 'الإعدادات', icon: Settings, route: 'settings' },
+    { text: 'المساعدة', icon: HelpCircle, route: 'help' },
+  ];
 
   const isActive = (route: string) => {
     // Basic active state logic for demonstration
@@ -92,12 +94,12 @@ export function Sidebar() {
                 <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}>
                   <item.icon size={20} />
                 </ListItemIcon>
-                <ListItemText 
-                  primary={item.text} 
-                  primaryTypographyProps={{ 
+                <ListItemText
+                  primary={item.text}
+                  primaryTypographyProps={{
                     fontWeight: isActive(item.route) ? 700 : 500,
-                    fontSize: '0.95rem' 
-                  }} 
+                    fontSize: '0.95rem'
+                  }}
                 />
               </ListItemButton>
             </ListItem>

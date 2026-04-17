@@ -2,24 +2,59 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Ticket;
-use Illuminate\Http\Request;
+use App\Services\AdminService;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class AgentController extends Controller
 {
+    public function __construct(
+        protected AdminService $adminService
+    ) {}
+
     public function index(): Response
     {
-        $tickets= Ticket::all();
-    return Inertia::render('Dashboard', [
-    'tickets' => $tickets,
-        'stats' => [
-                ['title' => 'التذاكر النشطة', 'value' => '124', 'change' => '+12%', 'icon' => 'MessageCircle', 'color' => '#9fcaff'],
-                ['title' => 'وقت الاستجابة', 'value' => '1.2m', 'change' => '-15%', 'icon' => 'Clock', 'color' => '#8ecdff'],
-                ['title' => 'كفاءة الذكاء الاصطناعي', 'value' => '94%', 'change' => '+5%', 'icon' => 'Zap', 'color' => '#4498d0'],
-                ['title' => 'معدل الرضا', 'value' => '4.8', 'change' => '+2%', 'icon' => 'TrendingUp', 'color' => '#9fcaff'],
+        $tickets = $this->adminService->getAllTickets();
+        $statsData = $this->adminService->getStats();
+
+        // Mapping backend stats to the frontend format
+        $stats = [
+            [
+                'title' => 'إجمالي التذاكر',
+                'value' => $statsData['total_tickets'],
+                'change' => '+0%',
+                'icon' => 'MessageCircle',
+                'color' => '#9fcaff',
             ],
-]);
+            [
+                'title' => 'التذاكر المفتوحة',
+                'value' => $statsData['open_tickets'],
+                'change' => '+0%',
+                'icon' => 'Clock',
+                'color' => '#8ecdff',
+            ],
+            [
+                'title' => 'استهلاك الكلمات (Tokens)',
+                'value' => number_format((float) $statsData['total_ai_tokens']),
+                'change' => '+12%',
+                'icon' => 'Zap',
+                'color' => '#8ecdff',
+            ],
+            [
+                'title' => 'تكلفة الذكاء الاصطناعي',
+                'value' => '$'.number_format((float) $statsData['total_ai_cost'], 4),
+                'change' => '+5%',
+                'icon' => 'MessageCircle',
+                'color' => '#9fcaff',
+            ],
+        ];
+
+        $aiLogs = $this->adminService->getAiLogs();
+
+        return Inertia::render('Dashboard', [
+            'tickets' => $tickets->items(),
+            'stats' => $stats,
+            'aiLogs' => $aiLogs->items(),
+        ]);
     }
 }

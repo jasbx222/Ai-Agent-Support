@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Typography, Box, Button } from '@mui/material';
 import { Head } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
@@ -6,13 +6,18 @@ import { Plus } from 'lucide-react';
 import DashboardLayout from '../Layouts/DashboardLayout';
 import { StatsOverview } from '../Components/Dashboard/StatsOverview';
 import { TicketTable } from '../Components/Dashboard/TicketTable';
+import { CreateTicketModal } from '../Components/Dashboard/CreateTicketModal';
+import { AiUsageTable } from '../Components/Dashboard/AiUsageTable';
 
 interface Props {
   stats?: any[];
   tickets?: any[];
+  aiLogs?: any[];
 }
 
-export default function Dashboard({ stats = [], tickets = [] }: Props) {
+export default function Dashboard({ stats = [], tickets = [], aiLogs = [] }: Props) {
+  const [modalOpen, setModalOpen] = useState(false);
+
   return (
     <DashboardLayout>
       <Head title="Dashboard" />
@@ -37,17 +42,14 @@ export default function Dashboard({ stats = [], tickets = [] }: Props) {
           </Typography>
         </Box>
 
-        <Button
-          variant="contained"
-          startIcon={<Plus size={20} />}
-          sx={{ height: 48, px: 3 }}
-        >
-          تذكرة جديدة
-        </Button>
+
       </Box>
 
       <StatsOverview stats={stats} />
       <TicketTable tickets={tickets} />
+      <AiUsageTable logs={aiLogs} />
+
+      <CreateTicketModal open={modalOpen} onClose={() => setModalOpen(false)} />
     </DashboardLayout>
   );
 }

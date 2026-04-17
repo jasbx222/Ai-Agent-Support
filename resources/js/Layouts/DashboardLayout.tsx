@@ -8,7 +8,7 @@ import { Box, CssBaseline } from '@mui/material';
 import { nexusTheme } from '../Theme/NexusTheme';
 import { Sidebar } from '../Components/Dashboard/Sidebar';
 import { ChatWidget } from '../Components/Chat/ChatWidget';
-
+import { usePage } from '@inertiajs/react';
 // Create RTL cache
 const cacheRtl = createCache({
   key: 'muirtl',
@@ -20,6 +20,8 @@ interface Props {
 }
 
 export default function DashboardLayout({ children }: Props) {
+  const { auth } = usePage().props as any;
+  const isAdmin = auth.user.role === 'admin';
   return (
     <CacheProvider value={cacheRtl}>
       <ThemeProvider theme={nexusTheme}>
@@ -38,7 +40,7 @@ export default function DashboardLayout({ children }: Props) {
           >
             {children}
           </Box>
-          <ChatWidget />
+          <ChatWidget type={isAdmin ? 'admin' : 'customer'} />
         </Box>
       </ThemeProvider>
     </CacheProvider>

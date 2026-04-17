@@ -14,6 +14,22 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
+     * Check if user is admin
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    /**
+     * Check if user is employee
+     */
+    public function isEmployee(): bool
+    {
+        return $this->role === 'employee';
+    }
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
@@ -22,6 +38,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -45,5 +62,21 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Get the user's tickets.
+     */
+    public function tickets()
+    {
+        return $this->hasMany(Ticket::class);
+    }
+
+    /**
+     * Get the user's AI runs.
+     */
+    public function aiRuns()
+    {
+        return $this->hasMany(AiRun::class);
     }
 }
