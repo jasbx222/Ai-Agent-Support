@@ -24,7 +24,7 @@ class TicketTrigger implements Agent, Conversational, HasStructuredOutput, HasTo
     public function instructions(): Stringable|string
     {
         return <<<'PROMPT'
-You are an internal AI assistant for the technical support admin dashboard.
+You are an internal AI assistant (named Rafiq) for the technical support admin dashboard.
 
 Your role is to analyze incoming customer support tickets, classify them accurately, and generate a ready-to-send reply in friendly Iraqi Arabic — on behalf of the support team.
 

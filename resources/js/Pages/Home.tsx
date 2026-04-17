@@ -117,7 +117,7 @@ function ChatPreview() {
           <Box key={c} sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: c }} />
         ))}
         <Typography sx={{ ml: 2, color: C.muted, fontSize: 13, fontFamily: 'monospace' }}>
-          nexus-ai · محادثة مباشرة
+          rafiq-ai · محادثة مباشرة
         </Typography>
         <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1 }}>
           <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#27c93f', boxShadow: '0 0 6px #27c93f' }} />
@@ -311,7 +311,7 @@ export default function Home() {
                   </Typography>
 
                   <Typography sx={{ color: C.muted, fontSize: 17, lineHeight: 1.85, mb: 5, maxWidth: 500 }}>
-                    Nexus AI يتعامل مع كل استفسار على الفور — بذكاء حقيقي، لا ردود معلّبة.
+                    Rafiq AI يتعامل مع كل استفسار على الفور — بذكاء حقيقي، لا ردود معلّبة.
                     دعم حقيقي على مدار الساعة بلا انتظار.
                   </Typography>
 
@@ -399,7 +399,7 @@ export default function Home() {
                 color: C.accentGlow, fontSize: 13, fontWeight: 700,
                 letterSpacing: 3, textTransform: 'uppercase', mb: 2,
               }}>
-                لماذا Nexus AI؟
+                لماذا Rafiq AI؟
               </Typography>
               <Typography sx={{ color: 'white', fontWeight: 900, fontSize: { xs: '2rem', md: '3rem' }, lineHeight: 1.2 }}>
                 مصمم للسرعة.
@@ -447,7 +447,7 @@ export default function Home() {
                 جرب الفرق بنفسك
               </Typography>
               <Typography sx={{ color: C.muted, fontSize: 16, mb: 5, maxWidth: 480, mx: 'auto' }}>
-                لا تحتاج إلى بطاقة ائتمانية — ابدأ محادثتك الأولى مع Nexus AI الآن.
+                لا تحتاج إلى بطاقة ائتمانية — ابدأ محادثتك الأولى مع Rafiq AI الآن.
               </Typography>
               <Button
                 variant="contained"

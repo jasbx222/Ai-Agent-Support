@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Box, IconButton, Typography, alpha, TextField, InputAdornment, Slide, Paper, Chip } from '@mui/material';
 import { MessageCircle, X, Send, Sparkles, Bot } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { glassStyle } from '../../Theme/NexusTheme';
+import { glassStyle } from '../../Theme/RafiqTheme';
 import axios from 'axios';
 import { RichCard } from './RichCard';
 

@@ -52,10 +52,10 @@ export function Sidebar() {
             justifyContent: 'center',
           }}
         >
-          <Box sx={{ width: 24, height: 24, bgcolor: '#003259', mask: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z\'/%3E%3Cpath d=\'M5 3v4\'/%3E%3Cpath d=\'M19 17v4\'/%3E%3Cpath d=\'M3 5h4\'/%3E%3Cpath d=\'M17 19h4\'/%3E%3C/svg%3E") no-repeat center' }} />
+          <Box sx={{ width: 24, height: 24, bgcolor: '#003259', mask: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2\'/%3E%3Ccircle cx=\'12\' cy=\'7\' r=\'4\'/%3E%3C/svg%3E") no-repeat center' }} />
         </Box>
         <Typography variant="h6" sx={{ fontWeight: 800, letterSpacing: -0.5, color: '#9fcaff' }}>
-          Nexus AI
+            Rafiq AI
         </Typography>
       </Box>
 

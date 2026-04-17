@@ -5,7 +5,7 @@ import createCache from '@emotion/cache';
 import { prefixer } from 'stylis';
 import rtlPlugin from 'stylis-plugin-rtl';
 import { Box, CssBaseline } from '@mui/material';
-import { nexusTheme } from '../Theme/NexusTheme';
+import { rafiqTheme } from '../Theme/RafiqTheme';
 import { Sidebar } from '../Components/Dashboard/Sidebar';
 import { ChatWidget } from '../Components/Chat/ChatWidget';
 import { usePage } from '@inertiajs/react';
@@ -24,7 +24,7 @@ export default function DashboardLayout({ children }: Props) {
   const isAdmin = auth.user.role === 'admin';
   return (
     <CacheProvider value={cacheRtl}>
-      <ThemeProvider theme={nexusTheme}>
+      <ThemeProvider theme={rafiqTheme}>
         <CssBaseline />
         <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
           <Sidebar />

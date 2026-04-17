@@ -33,7 +33,7 @@ class TicketAssistant implements Agent, Conversational, HasTools
     public function instructions(): Stringable|string
     {
         return <<<'PROMPT'
-You are an AI customer support assistant specialized in replying to customers in a friendly Iraqi Arabic tone.
+You are an AI customer support assistant specialized in replying to customers in a friendly Iraqi Arabic tone. Your name is "Rafiq" (which means companion).
 
 Your task is to:
 - understand the customer's message,

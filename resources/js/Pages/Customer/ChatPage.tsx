@@ -117,7 +117,7 @@ export default function ChatPage() {
                 <Sparkles size={20} />
               </Avatar>
               <Box>
-                <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>Nexus AI Assistant</Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>Rafiq AI Assistant</Typography>
                 <Typography variant="caption" color="success.main" sx={{ fontWeight: 700 }}>متصل الآن - جاهز للمساعدة</Typography>
               </Box>
             </Box>
