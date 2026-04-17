@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
                 'name' => "User $i",
                 'email' => "user$i@example.com",
                 'password' => Hash::make('12345678'),
+                'phone' => '0000000000',
             ]);
 
             $users[] = $user;
