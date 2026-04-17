@@ -22,4 +22,10 @@ export default defineConfig({
             ignored: ['**/storage/framework/views/**'],
         },
     },
+
+    // 👇 أضف هذا
+    build: {
+        outDir: 'public/build',
+        emptyOutDir: true,
+    },
 });
