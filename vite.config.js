@@ -23,9 +23,11 @@ export default defineConfig({
         },
     },
 
-    // 👇 أضف هذا
+
     build: {
         outDir: 'public/build',
         emptyOutDir: true,
+        sourcemap: false,
+        chunkSizeWarningLimit: 1000,
     },
 });
