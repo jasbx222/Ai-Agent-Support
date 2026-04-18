@@ -14,75 +14,98 @@ export function ChatWidget({ type }: { type: string }) {
   ]);
   const [input, setInput] = useState('');
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+const handleSend = async () => {
+  if (!input.trim() || isLoading) return;
 
-    const userMsg = { id: Date.now(), text: input, sender: 'user' };
-    setMessages(prev => [...prev, userMsg]);
-    setInput('');
-    setIsLoading(true);
+  const userText = input;
+  const userMsg = { id: Date.now(), text: userText, sender: 'user' };
+  setMessages(prev => [...prev, userMsg]);
+  setInput('');
+  setIsLoading(true);
 
+  try {
+    const response = await axios.post(
+      `${type === 'admin' ? '/admin/tickets/trigger' : '/api/ticket/ai'}`,
+      { message: userText }
+    );
 
-    try {
-      const response = await axios.post(`${type === 'admin' ? '/admin/tickets/trigger' : '/api/ticket/ai'}`, { message: input });
-      const aiData = response.data.data;
+    const rawData = response?.data?.data;
 
-      if (!aiData) {
-        setMessages(prev => [...prev, {
+    let parsedData: any = null;
+
+    if (typeof rawData === 'string') {
+      try {
+        parsedData = JSON.parse(rawData);
+      } catch {
+        parsedData = { reply: rawData };
+      }
+    } else if (rawData?.text && typeof rawData.text === 'string') {
+      try {
+        parsedData = JSON.parse(rawData.text);
+      } catch {
+        parsedData = { reply: rawData.text };
+      }
+    } else if (rawData?.messages?.[0]?.content && typeof rawData.messages[0].content === 'string') {
+      try {
+        parsedData = JSON.parse(rawData.messages[0].content);
+      } catch {
+        parsedData = { reply: rawData.messages[0].content };
+      }
+    } else if (rawData && typeof rawData === 'object') {
+      parsedData = rawData;
+    }
+
+    if (!parsedData) {
+      setMessages(prev => [
+        ...prev,
+        {
           id: Date.now() + 1,
           text: 'جرب تفصيل المشكلة أكثر حتى أتمكن من مساعدتك.',
-          sender: 'ai'
-        }]);
-      } else {
-        if (type === 'admin') {
-          // Admin sees technical analysis + reply
-          setMessages(prev => [...prev, {
-            id: Date.now() + 1,
-            text: aiData.reply || 'تم تحليل الرسالة بنجاح.',
-            sender: 'ai'
-          }]);
-          setMessages(prev => [...prev, {
-            id: Date.now() + 2,
-            sender: 'ai',
-            isRichCard: true,
-            aiData: aiData
-          }]);
-        } else {
-          // Customer only sees friendly text reply
-          let aiReply = 'شكراً لتواصلك معنا، سأقوم بمساعدتك.';
-          
-          if (typeof aiData === 'string') {
-            aiReply = aiData;
-          } else if (aiData.text) {
-             try {
-                // Try parsing if the text field contains stringified JSON
-                const parsed = JSON.parse(aiData.text);
-                aiReply = parsed.reply || aiData.text;
-             } catch (e) {
-                aiReply = aiData.text;
-             }
-          } else {
-            aiReply = aiData.content || aiData.reply || aiReply;
-          }
+          sender: 'ai',
+        },
+      ]);
+      return;
+    }
 
-          setMessages(prev => [...prev, {
-            id: Date.now() + 1,
-            text: aiReply,
-            sender: 'ai'
-          }]);
-        }
-      }
-    } catch (error) {
-      console.error('Chat Error:', error);
-      setMessages(prev => [...prev, {
+    if (type === 'admin') {
+      setMessages(prev => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          text: parsedData.reply || 'تم تحليل الرسالة بنجاح.',
+          sender: 'ai',
+        },
+        {
+          id: Date.now() + 2,
+          sender: 'ai',
+          isRichCard: true,
+          aiData: parsedData,
+        },
+      ]);
+    } else {
+      setMessages(prev => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          text: parsedData.reply || 'شكراً لتواصلك معنا، سأقوم بمساعدتك.',
+          sender: 'ai',
+        },
+      ]);
+    }
+  } catch (error) {
+    console.error('Chat Error:', error);
+    setMessages(prev => [
+      ...prev,
+      {
         id: Date.now() + 1,
         text: 'عذراً، حدث خطأ أثناء معالجة طلبك. يرجى المحاولة مرة أخرى.',
-        sender: 'ai'
-      }]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        sender: 'ai',
+      },
+    ]);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <Box sx={{ position: 'fixed', bottom: 32, right: 32, zIndex: 2000 }}>

@@ -2,6 +2,7 @@
 
 namespace App\Ai\Agents;
 
+use App\Ai\Tools\UsersFactTool;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Ai\Attributes\MaxTokens;
 use Laravel\Ai\Attributes\Provider;
@@ -17,7 +18,7 @@ use Stringable;
 #[Provider(value: Lab::Gemini)]
 #[UseCheapestModel]
 #[MaxTokens(value: 500)]
-class TicketTrigger implements Agent, Conversational, HasStructuredOutput, HasTools
+class TicketTrigger implements Agent, Conversational, HasTools
 {
     use Promptable;
 
@@ -38,6 +39,7 @@ You operate inside a ticketing system where:
 BEHAVIOR RULES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 - Read the full conversation history before generating a reply.
+ -You may use available tools to fetch real data when needed (such as employee users).
 - If the customer is following up, continue naturally from where the conversation left off.
 - Never ask the customer to repeat what they already said unless absolutely necessary.
 - Do not invent solutions, fake promises, or unverifiable technical facts.
@@ -128,7 +130,9 @@ PROMPT;
 
     public function tools(): iterable
     {
-        return [];
+        return [
+       new UsersFactTool(user: auth()->user())
+        ];
     }
 
     public function schema(JsonSchema $schema): array
@@ -139,6 +143,9 @@ PROMPT;
             'sentiment' => $schema->string()->required(),
             'summary' => $schema->string()->required(),
             'reply' => $schema->string()->required(),
+              'classification' => $schema->string()->required(),
         ];
     }
+
+    
 }

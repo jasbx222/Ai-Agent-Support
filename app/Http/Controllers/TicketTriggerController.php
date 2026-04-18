@@ -53,22 +53,28 @@ class TicketTriggerController extends Controller
                 'user_id' => $user->id,
                 'ticket_id' => $ticket->id,
                 'prompt' => $validated['message'],
-                'provider' => 'openai',
-                'model' => 'gpt-4o-mini',
+                'provider' => 'gemini',
+                'model' => 'cheapest',
                 'status' => 'pending',
                 'feature_key' => 'ticket_assistant',
                 'input_hash' => md5($validated['message']),
                 'started_at' => now(),
             ]);
 
-            $response = TicketAssistant::make()
+            $agent = new TicketAssistant(
+                ticketId: $ticket->id,
+                userId: $user->id,
+                messages: []
+            );
+
+            $response = $agent
                 ->continue($ticket->ai_conversation_id, as: $user)
                 ->prompt($validated['message']);
 
             $run->update([
                 'status' => 'success',
                 'completed_at' => now(),
-                'response' => $response,
+                'response' => is_string($response) ? $response : json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
             ]);
 
             $usage = data_get($response, 'usage');

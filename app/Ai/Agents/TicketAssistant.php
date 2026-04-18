@@ -2,6 +2,10 @@
 
 namespace App\Ai\Agents;
 
+use App\Ai\Tools\TicketFactTool;
+use App\Ai\Tools\TicketMessagesTool;
+use App\Models\User;
+use Laravel\Ai\Attributes\MaxSteps;
 use Laravel\Ai\Attributes\MaxTokens;
 use Laravel\Ai\Attributes\Provider;
 use Laravel\Ai\Attributes\UseCheapestModel;
@@ -15,20 +19,24 @@ use Stringable;
 
 #[Provider(value: Lab::Gemini)]
 #[UseCheapestModel]
-#[MaxTokens(value: 500)]
+#[MaxTokens(value: 5000)]
+#[MaxSteps(value: 3)]
 class TicketAssistant implements Agent, Conversational, HasTools
 {
-    use Promptable,RemembersConversations;
+    use Promptable, RemembersConversations;
 
     protected array $conversation = [];
 
-    public function __construct(array $messages = [])
-    {
+    public function __construct(
+        public int $ticketId,
+        public ?int $userId = null,
+        array $messages = []
+    ) {
         $this->conversation = $messages;
     }
 
     /**
-     * 🧠 التعليمات (العقل مال البوت)
+     * 🧠 التعليمات
      */
     public function instructions(): Stringable|string
     {
@@ -60,11 +68,13 @@ Rules:
 - Avoid overly formal Arabic.
 - Avoid slang that is too casual or unprofessional.
 
+Use tools when needed to safely fetch ticket facts or recent ticket messages.
+Stay strictly within the current ticket.
 PROMPT;
     }
 
     /**
-     * 💬 الميموري (محادثة التكت)
+     * 💬 رسائل المحادثة الحالية
      */
     public function messages(): iterable
     {
@@ -72,10 +82,20 @@ PROMPT;
     }
 
     /**
-     * 🛠️ الأدوات (حالياً فارغة)
+     * 🛠️ الأدوات
      */
     public function tools(): iterable
     {
-        return [];
+        $user = $this->userId
+            ? User::find($this->userId)
+            : null;
+
+        return [
+            new TicketFactTool(
+                // ticketId: $this->ticketId,
+                user: $user
+            ),
+      
+        ];
     }
 }
