@@ -13,19 +13,29 @@ class DatabaseSeeder extends Seeder
     {
         $users = [];
 
+        // 🔥 إنشاء أدمن
+        $admin = User::create([
+            'name' => 'Admin',
+            'email' => 'admin@example.com',
+            'password' => Hash::make('12345678'),
+            'role' => 'admin', // مهم
+        ]);
+
+        $users[] = $admin;
+
         // إنشاء 10 مستخدمين
         for ($i = 1; $i <= 10; $i++) {
             $user = User::create([
                 'name' => "User $i",
                 'email' => "user$i@example.com",
                 'password' => Hash::make('12345678'),
-                
+                'role' => 'user', // حدد الدور
             ]);
 
             $users[] = $user;
         }
 
-        // إنشاء 10 تذاكر (واحدة لكل مستخدم)
+        // إنشاء تذاكر
         for ($i = 0; $i < 10; $i++) {
             Ticket::create([
                 'user_id' => $users[$i]->id,
