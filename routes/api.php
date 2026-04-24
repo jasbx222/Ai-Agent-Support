@@ -4,11 +4,13 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UploadDocumentController;
 use App\Http\Controllers\AiDocumentQaController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\TestController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TicketTriggerController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/ticket/ai', TicketTriggerController::class);
+Route::get('/audio/ai', TestController::class);
 Route::post('/ai/document-qa', AiDocumentQaController::class);
 Route::post('/upload-document', [UploadDocumentController::class, 'store']);
 Route::prefix('v1')->group(function () {
