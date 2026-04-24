@@ -7,8 +7,10 @@ namespace App\Services;
 use App\Events\TicketCreated;
 use App\Models\Ticket;
 use App\Models\User;
+use App\Notifications\NewTicketNotification;
 use App\Repositories\Interfaces\TicketRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Notification;
 
 class TicketService
 {
@@ -24,6 +26,10 @@ class TicketService
         $ticket = $this->ticketRepository->create($data);
 
         TicketCreated::dispatch($ticket);
+
+        // Notify all admins
+        $admins = User::whereIn('role', ['admin', 'employee'])->get();
+        Notification::send($admins, new NewTicketNotification($ticket));
 
         return $ticket;
     }

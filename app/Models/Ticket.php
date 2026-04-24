@@ -15,6 +15,7 @@ class Ticket extends Model
         'sentiment',
         'status',
         'ai_suggestion',
+        'ai_conversation_id',
     ];
 
     /**

@@ -10,11 +10,14 @@ import {
   alpha,
   Avatar,
   InputAdornment,
-  CircularProgress
+  CircularProgress,
+  Button
 } from '@mui/material';
-import { Send, Bot, User, Sparkles } from 'lucide-react';
+import { Send, Bot, User, Sparkles, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
+import { usePage } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 
 interface Message {
   id: number;
@@ -22,7 +25,17 @@ interface Message {
   sender: 'user' | 'ai';
 }
 
-export default function ChatPage() {
+interface TicketInfo {
+  id: number;
+  subject: string;
+  status: string;
+}
+
+interface Props {
+  ticket?: TicketInfo;
+}
+
+export default function ChatPage({ ticket }: Props) {
   const [messages, setMessages] = useState<Message[]>([
     { id: 1, text: 'أهلاً بك في الدعم الفني الذكي. كيف يمكنني مساعدتك اليوم؟', sender: 'ai' },
   ]);
@@ -47,7 +60,13 @@ export default function ChatPage() {
     setIsLoading(true);
 
     try {
-      const response = await axios.post('/api/ticket/ai', { message: input });
+      // إرسال ticket_id إذا كان موجوداً
+      const payload: { message: string; ticket_id?: number } = { message: input };
+      if (ticket?.id) {
+        payload.ticket_id = ticket.id;
+      }
+
+      const response = await axios.post('/api/ticket/ai', payload);
       const aiData = response.data.data;
       
       // TicketAssistant might return just text or an object with content, or stringified JSON in 'text'
@@ -80,8 +99,6 @@ export default function ChatPage() {
         sender: 'ai'
       }]);
     } finally {
-      setIsLoading(true);
-      // Brief delay to simulate thinking if needed, but here we just reset
       setIsLoading(false);
     }
   };
@@ -95,6 +112,26 @@ export default function ChatPage() {
         bgcolor: '#f8fafc' 
       }}>
         <Container maxWidth="md" sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', py: 4, overflow: 'hidden' }}>
+          
+          {/* تذكرة المعلومات */}
+          {ticket && (
+            <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Button
+                size="small"
+                startIcon={<ArrowLeft size={16} />}
+                onClick={() => router.visit(route('customer.select-ticket'))}
+                sx={{ textTransform: 'none' }}
+              >
+                العودة
+              </Button>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                {ticket.subject}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                ({ticket.status === 'Open' ? 'مفتوحة' : ticket.status === 'In Progress' ? 'قيد العمل' : 'مغلقة'})
+              </Typography>
+            </Box>
+          )}
           
           <Paper 
             elevation={0}

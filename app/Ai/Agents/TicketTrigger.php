@@ -2,14 +2,15 @@
 
 namespace App\Ai\Agents;
 
+use App\Ai\Tools\TimeTool;
 use App\Ai\Tools\UsersFactTool;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Ai\Attributes\MaxTokens;
 use Laravel\Ai\Attributes\Provider;
 use Laravel\Ai\Attributes\UseCheapestModel;
+use Laravel\Ai\Concerns\RemembersConversations;
 use Laravel\Ai\Contracts\Agent;
 use Laravel\Ai\Contracts\Conversational;
-use Laravel\Ai\Contracts\HasStructuredOutput;
 use Laravel\Ai\Contracts\HasTools;
 use Laravel\Ai\Enums\Lab;
 use Laravel\Ai\Promptable;
@@ -20,7 +21,7 @@ use Stringable;
 #[MaxTokens(value: 500)]
 class TicketTrigger implements Agent, Conversational, HasTools
 {
-    use Promptable;
+    use Promptable, RemembersConversations;
 
     public function instructions(): Stringable|string
     {
@@ -123,15 +124,12 @@ IMPORTANT
 PROMPT;
     }
 
-    public function messages(): iterable
-    {
-        return [];
-    }
-
     public function tools(): iterable
     {
         return [
-       new UsersFactTool(user: auth()->user())
+            new UsersFactTool(user: auth()->user()),
+            new TimeTool,
+
         ];
     }
 
@@ -143,9 +141,7 @@ PROMPT;
             'sentiment' => $schema->string()->required(),
             'summary' => $schema->string()->required(),
             'reply' => $schema->string()->required(),
-              'classification' => $schema->string()->required(),
+            'classification' => $schema->string()->required(),
         ];
     }
-
-    
 }

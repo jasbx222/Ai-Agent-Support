@@ -17,8 +17,9 @@ class TicketTriggerAdminController extends Controller
     {
         $validated = $request->validate([
             'message' => ['required', 'string'],
-            'ticket_id' => ['nullable', 'integer'],
+            'ticket_id' => ['nullable', 'integer', 'exists:tickets,id'],
         ]);
+
         $run = null;
 
         try {
@@ -31,13 +32,24 @@ class TicketTriggerAdminController extends Controller
                 ], 400);
             }
 
-            $ticket = Ticket::first() ?? Ticket::create([
-                'user_id' => $user->id,
-                'subject' => 'AI Generated Ticket',
-                'description' => $validated['message'],
-                'status' => 'Open',
-                'priority' => 'Medium',
-            ]);
+            $ticketId = $validated['ticket_id'] ?? null;
+
+            $ticket = $ticketId
+                ? Ticket::find($ticketId)
+                : Ticket::create([
+                    'user_id' => $user->id,
+                    'subject' => 'AI Generated Ticket',
+                    'description' => $validated['message'],
+                    'status' => 'Open',
+                    'priority' => 'Medium',
+                ]);
+
+            if (! $ticket) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ticket not found.',
+                ], 404);
+            }
 
             $run = AiRun::create([
                 'user_id' => $user->id,
@@ -51,11 +63,27 @@ class TicketTriggerAdminController extends Controller
                 'started_at' => now(),
             ]);
 
-            $response = TicketTrigger::make()->prompt($validated['message']);
+            $agent = TicketTrigger::make();
+
+            if ($ticket->ai_conversation_id) {
+                $agent->continue($ticket->ai_conversation_id, $user);
+            } else {
+                $agent->forUser($user);
+            }
+
+            $response = $agent->prompt($validated['message']);
+
+            if (! $ticket->ai_conversation_id && $agent->currentConversation()) {
+                $ticket->update([
+                    'ai_conversation_id' => $agent->currentConversation(),
+                ]);
+            }
 
             $run->update([
                 'status' => 'success',
-
+                'response' => is_string($response)
+                    ? $response
+                    : json_encode($response, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT),
             ]);
 
             $usage = data_get($response, 'usage');
@@ -73,6 +101,7 @@ class TicketTriggerAdminController extends Controller
                 'success' => true,
                 'data' => $response,
             ]);
+
         } catch (RateLimitedException $e) {
             if ($run) {
                 $run->update([
@@ -85,6 +114,7 @@ class TicketTriggerAdminController extends Controller
                 'success' => false,
                 'message' => 'AI service is temporarily rate limited. Please try again in a moment.',
             ], 429);
+
         } catch (Throwable $e) {
             if ($run) {
                 $run->update([

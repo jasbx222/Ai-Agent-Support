@@ -6,6 +6,7 @@ use App\Ai\Agents\TicketAssistant;
 use App\Models\AiRun;
 use App\Models\Ticket;
 use App\Models\User;
+use App\Services\TicketService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Laravel\Ai\Exceptions\RateLimitedException;
@@ -13,6 +14,10 @@ use Throwable;
 
 class TicketTriggerController extends Controller
 {
+    public function __construct(
+        protected TicketService $ticketService
+    ) {}
+
     public function __invoke(Request $request)
     {
         $validated = $request->validate([
@@ -35,11 +40,9 @@ class TicketTriggerController extends Controller
             if (! empty($validated['ticket_id'])) {
                 $ticket = Ticket::findOrFail($validated['ticket_id']);
             } else {
-                $ticket = Ticket::create([
-                    'user_id' => $user->id,
+                $ticket = $this->ticketService->createTicket($user, [
                     'subject' => 'AI Generated Ticket',
                     'description' => $validated['message'],
-                    'status' => 'Open',
                     'priority' => 'Medium',
                 ]);
             }

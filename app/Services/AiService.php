@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Ai\Agents\TicketTrigger;
 use App\Models\Ticket;
+use App\Models\User;
 use App\Repositories\Interfaces\TicketRepositoryInterface;
 use App\Services\Interfaces\AiServiceInterface;
 use Illuminate\Support\Facades\Log;
@@ -20,10 +21,24 @@ class AiService implements AiServiceInterface
     public function suggestReply(Ticket $ticket): string
     {
         try {
-            // Using the existing Laravel AI Agent integration (TicketTrigger)
+            $user = $ticket->user ?? User::first();
+            $agent = TicketTrigger::make();
+
+            // Load existing conversation or start a new one for the user
+            if ($ticket->ai_conversation_id) {
+                $agent->continue($ticket->ai_conversation_id, $user);
+            } else {
+                $agent->forUser($user);
+            }
+
             $promptMessage = "Subject: {$ticket->subject}\nDescription: {$ticket->description}";
 
-            $response = TicketTrigger::make()->prompt($promptMessage);
+            $response = $agent->prompt($promptMessage);
+
+            // Save the conversation ID if it was just created
+            if (! $ticket->ai_conversation_id && $agent->currentConversation()) {
+                $ticket->update(['ai_conversation_id' => $agent->currentConversation()]);
+            }
 
             // Extract the generated values
             $reply = data_get($response, 'reply', '');

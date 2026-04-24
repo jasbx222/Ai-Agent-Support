@@ -1,13 +1,16 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\UploadDocumentController;
+use App\Http\Controllers\AiDocumentQaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TicketTriggerController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/ticket/ai', TicketTriggerController::class);
-
+Route::post('/ai/document-qa', AiDocumentQaController::class);
+Route::post('/upload-document', [UploadDocumentController::class, 'store']);
 Route::prefix('v1')->group(function () {
     Route::post('auth/register', [AuthController::class, 'register']);
     Route::post('auth/login', [AuthController::class, 'login']);

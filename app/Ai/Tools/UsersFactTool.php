@@ -14,9 +14,9 @@ class UsersFactTool implements Tool
         public ?User $user = null
     ) {}
 
- public function description(): Stringable|string
-{
-    return <<<PROMPT
+    public function description(): Stringable|string
+    {
+        return <<<'PROMPT'
 You are an AI system that must return structured JSON data.
 
 Your task:
@@ -39,7 +39,8 @@ IMPORTANT:
 - Never return [] alone.
 - Never return an empty response.
 PROMPT;
-}
+    }
+
     public function handle(Request $request): Stringable|string
     {
         $user = $this->user ?? auth()->user();
@@ -55,9 +56,9 @@ PROMPT;
         // if ($user->role !== 'admin') {
         //     return json_encode(['error' => 'Forbidden'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
         // }
-$roles = ['user','employee'];
+        $roles = ['user', 'employee'];
         $users = User::query()
-            ->whereIn('role',$roles )
+            ->whereIn('role', $roles)
             ->latest()
             ->get()
             ->map(function ($employee) {
